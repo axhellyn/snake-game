@@ -14,10 +14,14 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.Random;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 public class GamePanel extends JPanel implements ActionListener{
+    
+    private Leaderboard leaderboard;
     
     static final int SCREEN_WIDTH = 600;
     static final int SCREEN_HEIGHT = 600;
@@ -80,6 +84,15 @@ public class GamePanel extends JPanel implements ActionListener{
             g.drawString("Score: " + applesEaten, (SCREEN_WIDTH - metrics.stringWidth("Score: " + applesEaten))/2, g.getFont().getSize());
         } else {
             gameOver(g);
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                leaderboard = new Leaderboard();
+                leaderboard.setVisible(true); // Tampilkan JFrame baru
+
+                JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+                if (topFrame != null) {
+                    topFrame.dispose(); // Tutup JFrame yang memuat GamePanel
+                }
+            });        
         }
         
     }
@@ -202,6 +215,16 @@ public class GamePanel extends JPanel implements ActionListener{
                     break;
             }
         }
+    }
+    
+    public void resetGame() {
+        bodyParts = 6;
+        applesEaten = 0;
+        direction = 'R';
+        x = new int[GAME_UNITS];
+        y = new int[GAME_UNITS];
+        newApple();
+        running = true;
     }
     
 }
