@@ -4,57 +4,74 @@
  */
 package snake;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JFrame;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.ResultSet;
-import javax.swing.table.DefaultTableModel;
+
 
 /**
  *
  * @author User
  */
-public class Leaderboard extends javax.swing.JFrame {
+public class FormInput extends javax.swing.JFrame {
 
     /**
      * Creates new form LeaderBoard
      */
-    public Leaderboard() {
+    
+    private int score = 0;
+    
+    public FormInput(int score) {
+        System.out.print(score - 6);
+        this.score = score - 6;
         initComponents();
-        showTable();
     }
     
-    public void showTable() {
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/snake_game", "root", "Adrenaline098AZ");
-            
-            Statement st = con.createStatement();
-            String showData = "select * from leaderboard";
-            ResultSet rs = st.executeQuery(showData);
-            
-            while(rs.next()) {
-                String id = String.valueOf(rs.getInt("id"));
-                String name = rs.getString("name");
-                String score = String.valueOf(rs.getInt("score"));
-                
-                String tbData[] = {id, name, score};
-                DefaultTableModel tblModel = (DefaultTableModel)tableData.getModel();
-                
-                tblModel.addRow(tbData);
-            }
-            
-        con.close();
-            
-        } catch (ClassNotFoundException | SQLException ex) {
-            Logger.getLogger(Leaderboard.class.getName()).log(Level.SEVERE, null, ex);
-        }
+//    public void submitHandle() {
+//         try {
+//            Class.forName("com.mysql.cj.jdbc.Driver");
+//            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/snake_game", "root", "Adrenaline098AZ");
+//            
+//            Statement st = con.createStatement();
+//            String insertData = "insert into leaderboard ('name, score') values ('" + inputText.getText() + "','" + this.score + "')";
+//            int ans = st.executeUpdate(insertData);
+//            
+////             JOptionPane.showMessageDialog(this, ans);
+//            
+//        con.close();
+//            
+//        } catch (ClassNotFoundException | SQLException ex) {
+//            Logger.getLogger(Leaderboard.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//    }
+    
+    public static boolean insertData(String name, int score) {
+    String url = "jdbc:mysql://localhost:3306/snake_game?useSSL=false";
+    String user = "root";
+    String password = "Adrenaline098AZ"; // Ganti dengan password Anda
+    
+    // Query hanya untuk kolom name dan score
+    String query = "INSERT INTO leaderboard (name, score) VALUES (?, ?)";
+    
+    try (Connection con = DriverManager.getConnection(url, user, password);
+         PreparedStatement pst = con.prepareStatement(query)) {
+         
+        // Set parameter nilai
+        pst.setString(1, name);
+        pst.setInt(2, score);
+        
+        // Eksekusi query
+        int rowsInserted = pst.executeUpdate();
+        return rowsInserted > 0;
+        
+    } catch (SQLException ex) {
+        ex.printStackTrace();
+        return false;
     }
+}
 
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -67,31 +84,15 @@ public class Leaderboard extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jEditorPane1 = new javax.swing.JEditorPane();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
         jPanel1 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
-        playButton = new javax.swing.JButton();
+        btnSubmit = new javax.swing.JButton();
         exitButton = new javax.swing.JButton();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        tableData = new javax.swing.JTable();
+        inputText = new javax.swing.JTextField();
 
         jLabel1.setText("jLabel1");
 
         jScrollPane1.setViewportView(jEditorPane1);
-
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
-            }
-        ));
-        jScrollPane2.setViewportView(jTable1);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -99,15 +100,15 @@ public class Leaderboard extends javax.swing.JFrame {
 
         jLabel2.setFont(new java.awt.Font("SansSerif", 1, 36)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(153, 153, 255));
-        jLabel2.setText("Leaderboard");
+        jLabel2.setText("INPUT NAME");
 
-        playButton.setBackground(new java.awt.Color(153, 153, 255));
-        playButton.setForeground(new java.awt.Color(255, 255, 255));
-        playButton.setText("Play Again");
-        playButton.setBorder(null);
-        playButton.addActionListener(new java.awt.event.ActionListener() {
+        btnSubmit.setBackground(new java.awt.Color(153, 153, 255));
+        btnSubmit.setForeground(new java.awt.Color(255, 255, 255));
+        btnSubmit.setText("Enter");
+        btnSubmit.setBorder(null);
+        btnSubmit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                playButtonActionPerformed(evt);
+                btnSubmitActionPerformed(evt);
             }
         });
 
@@ -120,47 +121,38 @@ public class Leaderboard extends javax.swing.JFrame {
             }
         });
 
-        tableData.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-                "id", "name", "score"
+        inputText.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                inputTextActionPerformed(evt);
             }
-        ));
-        jScrollPane3.setViewportView(tableData);
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(35, 35, 35)
-                .addComponent(exitButton, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(playButton, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(39, 39, 39))
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGap(121, 121, 121)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(121, 121, 121)
-                        .addComponent(jLabel2))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(65, 65, 65)
-                        .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 327, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(74, Short.MAX_VALUE))
+                        .addComponent(exitButton, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnSubmit, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(inputText, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(123, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(17, 17, 17)
+                .addGap(22, 22, 22)
                 .addComponent(jLabel2)
                 .addGap(18, 18, 18)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 32, Short.MAX_VALUE)
+                .addComponent(inputText, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 33, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(exitButton, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(playButton, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(btnSubmit, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(37, 37, 37))
         );
 
@@ -178,29 +170,40 @@ public class Leaderboard extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void playButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_playButtonActionPerformed
+    private void btnSubmitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSubmitActionPerformed
         // TODO add your handling code here:
+        
+//        submitHandle();
+        insertData(inputText.getText(), this.score);
+        
         this.setVisible(false);
         
                 dispose();
+        
+        Leaderboard leaderboard = new Leaderboard();
+        leaderboard.setVisible(true);
 
                 // Open a new JFrame with GamePanel
-                JFrame gameFrame = new JFrame("Snake Game");
-                gameFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                gameFrame.setSize(600, 600);
-                gameFrame.setResizable(false);
-                gameFrame.setLocationRelativeTo(null);
-
-                GamePanel gamePanel = new GamePanel();
-                gamePanel.resetGame();
-                gameFrame.add(gamePanel);
-                gameFrame.setVisible(true);
-    }//GEN-LAST:event_playButtonActionPerformed
+//                JFrame gameFrame = new JFrame("Snake Game");
+//                gameFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//                gameFrame.setSize(600, 600);
+//                gameFrame.setResizable(false);
+//                gameFrame.setLocationRelativeTo(null);
+//
+//                GamePanel gamePanel = new GamePanel();
+//                gamePanel.resetGame();
+//                gameFrame.add(gamePanel);
+//                gameFrame.setVisible(true);
+    }//GEN-LAST:event_btnSubmitActionPerformed
 
     private void exitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitButtonActionPerformed
         // TODO add your handling code here:
         System.exit(0);
     }//GEN-LAST:event_exitButtonActionPerformed
+
+    private void inputTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_inputTextActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_inputTextActionPerformed
 
     /**
      * @param args the command line arguments
@@ -219,36 +222,35 @@ public class Leaderboard extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Leaderboard.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(FormInput.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Leaderboard.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(FormInput.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Leaderboard.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(FormInput.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Leaderboard.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(FormInput.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
+        //</editor-fold>
         //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Leaderboard().setVisible(true);
+                new FormInput(0).setVisible(true);
             }
         });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnSubmit;
     private javax.swing.JButton exitButton;
+    private javax.swing.JTextField inputText;
     private javax.swing.JEditorPane jEditorPane1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JButton playButton;
-    private javax.swing.JTable tableData;
     // End of variables declaration//GEN-END:variables
 }
