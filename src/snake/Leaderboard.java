@@ -12,6 +12,13 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -28,6 +35,34 @@ public class Leaderboard extends javax.swing.JFrame {
         showTable();
     }
     
+    // utils
+    
+    public class Data {
+        private String id;
+        private String name;
+        private int score;
+
+        public Data(String id, String name, int score) {
+            this.id = id;
+            this.name = name;
+            this.score = score;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public int getScore() {
+            return score;
+        }
+    }
+    
+    
+    
     public void showTable() {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -36,16 +71,29 @@ public class Leaderboard extends javax.swing.JFrame {
             Statement st = con.createStatement();
             String showData = "select * from leaderboard";
             ResultSet rs = st.executeQuery(showData);
+           
+            List<Data> dataList = new ArrayList<>();
             
             while(rs.next()) {
                 String id = String.valueOf(rs.getInt("id"));
                 String name = rs.getString("name");
-                String score = String.valueOf(rs.getInt("score"));
+                int score = rs.getInt("score");
                 
-                String tbData[] = {id, name, score};
-                DefaultTableModel tblModel = (DefaultTableModel)tableData.getModel();
-                
-                tblModel.addRow(tbData);
+                dataList.add(new Data(id, name, score));
+            }
+            
+            Collections.sort(dataList, new Comparator<Data>() {
+                @Override
+                public int compare(Data d1, Data d2) {
+                    return Integer.compare(d2.getScore(), d1.getScore());
+                }
+            });
+            
+            DefaultTableModel tblModel = (DefaultTableModel) tableData.getModel();
+            
+            for (Data data : dataList) {
+                String[] tbData = {data.getId(), data.getName(), String.valueOf(data.getScore())};
+                    tblModel.addRow(tbData);
             }
             
         con.close();
